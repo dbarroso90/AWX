@@ -24,11 +24,22 @@
         owner: ansible
         group: ansible
 
-    - name: Add Ansible user's public key to authorized_keys
+    - name: Copy public key to remote host
+      copy:
+        src: /home/ansible/.ssh/id_rsa.pub
+        dest: /tmp/id_rsa.pub
+      delegate_to: localhost
+
+    - name: Add public key to authorized_keys
       authorized_key:
         user: ansible
-        key: "{{ lookup('file', '/home/ansible/.ssh/id_rsa.pub') }}"
+        key: "{{ lookup('file', '/tmp/id_rsa.pub') }}"
         state: present
+
+    - name: Remove temporary public key file
+      file:
+        path: /tmp/id_rsa.pub
+        state: absent
 
     - name: Install python3.11 and python3.11-pip packages
       yum:
