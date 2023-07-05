@@ -1,0 +1,117 @@
+---
+- name: Install Percona MySQL on RHEL 8 Master Node
+  hosts: all
+  become: yes
+
+  vars:
+    mysql_root_password: <password>
+    mysql_db_user: <dcsd_db_user>
+    mysql_db_password: <password>
+    mysql_replication_password: <password>
+    ansible_python_interpreter: /usr/bin/python3.11
+
+  tasks:
+    - name: Import Percona GPG key
+      rpm_key:
+        key: https://www.percona.com/downloads/RPM-GPG-KEY-percona
+        state: present
+
+    - name: Install the Percona repository RPM
+      yum:
+        name: https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+        state: present
+
+    - name: Disable MySQL DNF module
+      command: dnf module disable mysql -y
+
+    - name: Set up Percona repository
+      command: percona-release setup ps80 -y
+
+    - name: Install Percona Server for MySQL
+      yum:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - percona-server-server
+        - percona-xtrabackup-80
+
+    - name: Configure firewall
+      command: firewall-cmd --permanent --add-service=mysql
+
+    - name: Reload firewall
+      command: firewall-cmd --reload
+
+    - name: Start and enable the MySQL service
+      service:
+        name: mysql
+        state: started
+        enabled: yes
+
+    - name: Get temporary MySQL root password
+      shell: cat /var/log/mysqld.log | grep -i password | awk '{print $NF}'
+      register: mysql_temporary_password_output
+
+    - name: Set MySQL root password variable
+      set_fact:
+        mysql_temporary_password: "{{ mysql_temporary_password_output.stdout }}"
+
+    - name: Secure MySQL installation
+      expect:
+        command: mysql_secure_installation
+        responses:
+          "Enter password for user root:": "{{ mysql_temporary_password }}"
+          "New password:": "{{ mysql_root_password }}"
+          "Re-enter new password:": "{{ mysql_root_password }}"
+          "Change the password for root \\? \\(\\(Press y\\|Y for Yes, any other key for No\\) :": "No"
+          "Remove anonymous users\\? \\(Press y\\|Y for Yes, any other key for No\\) :": "y"
+          "Disallow root login remotely\\? \\(Press y\\|Y for Yes, any other key for No\\) :": "y"
+          "Remove test database and access to it\\? \\(Press y\\|Y for Yes, any other key for No\\) :": "y"
+          "Reload privilege tables now\\? \\(Press y\\|Y for Yes, any other key for No\\) :": "y"
+
+    - name: Create 'dcsd' database
+      mysql_db:
+        name: dcsd
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/lib/mysql/mysql.sock
+
+    - name: Create database user with full privileges
+      mysql_user:
+        name: "{{ mysql_db_user }}"
+        password: "{{ mysql_db_password }}"
+        priv: "*.*:ALL"
+        host: "%"
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/lib/mysql/mysql.sock
+
+    - name: Create replication user
+      mysql_user:
+        name: replication
+        password: "{{ mysql_replication_password }}"
+        priv: "*.*:REPLICATION SLAVE"
+        host: "%"
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/lib/mysql/mysql.sock
+
+    - name: Create backup directory
+      file:
+        path: "/tmp/backup"
+        state: directory
+
+    - name: Take full backup of the master node
+      command: xtrabackup --backup --target-dir=/tmp/backup --user=root --password="{{ mysql_root_password }}"
+
+    - name: Enable binary logging
+      lineinfile:
+        dest: /etc/my.cnf
+        regexp: "^#log_bin"
+        line: "log_bin = mysql-bin"
+        state: present
+
+    - name: Restart MySQL service
+      service:
+        name: mysql
+        state: restarted

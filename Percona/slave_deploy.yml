@@ -1,0 +1,111 @@
+---
+- name: Install Percona MySQL on RHEL 8 Slave Node
+  hosts: all
+  become: yes
+
+  vars:
+    mysql_root_password: <password>
+    mysql_replication_password: <password>
+    mysql_master_ip: <ip>
+    backup_directory: /tmp/backup
+    ansible_python_interpreter: /usr/bin/python3.11
+
+  tasks:
+    - name: Import Percona GPG key
+      rpm_key:
+        key: https://www.percona.com/downloads/RPM-GPG-KEY-percona
+        state: present
+
+    - name: Install the Percona repository RPM
+      yum:
+        name: https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+        state: present
+
+    - name: Disable MySQL DNF module
+      command: dnf module disable mysql -y
+
+    - name: Set up Percona repository
+      command: percona-release setup ps80 -y
+
+    - name: Install Percona Server for MySQL
+      yum:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - percona-server-server
+        - percona-xtrabackup-80
+
+    - name: Configure firewall
+      command: firewall-cmd --permanent --add-service=mysql
+
+    - name: Reload firewall
+      command: firewall-cmd --reload
+
+    - name: Start and enable the MySQL service
+      service:
+        name: mysql
+        state: started
+        enabled: yes
+
+    - name: Get temporary MySQL root password
+      shell: cat /var/log/mysqld.log | grep -i password | awk '{print $NF}'
+      register: mysql_temporary_password_output
+
+    - name: Set MySQL root password variable
+      set_fact:
+        mysql_temporary_password: "{{ mysql_temporary_password_output.stdout }}"
+
+    - name: Secure MySQL installation
+      expect:
+        command: mysql_secure_installation
+        responses:
+          "Enter password for user root:": "{{ mysql_temporary_password }}"
+          "New password:": "{{ mysql_root_password }}"
+          "Re-enter new password:": "{{ mysql_root_password }}"
+          "Change the password for root \\? \\(\\(Press y\\|Y for Yes, any other key for No\\) :": "No"
+          "Remove anonymous users\\? \\(Press y\\|Y for Yes, any other key for No\\) :": "y"
+          "Disallow root login remotely\\? \\(Press y\\|Y for Yes, any other key for No\\) :": "y"
+          "Remove test database and access to it\\? \\(Press y\\|Y for Yes, any other key for No\\) :": "y"
+          "Reload privilege tables now\\? \\(Press y\\|Y for Yes, any other key for No\\) :": "y"
+
+    - name: Stop MySQL service
+      service:
+        name: mysql
+        state: stopped
+
+    - name: Copy backup files from master to slave
+      command: rsync -avz --progress root@"{{ mysql_master_ip }}":/tmp/backup /tmp/
+
+    - name: Prepare backup on the slave node
+      command: xtrabackup --prepare --target-dir="{{ backup_directory }}"
+
+    - name: Ensure MySQL data directory is empty on the slave node
+      file:
+        path: /var/lib/mysql
+        state: absent
+
+    - name: Move backed-up data files to target directory
+      command: xtrabackup --move-back --target-dir="{{ backup_directory }}"
+
+    - name: Change ownership of the restored data directory
+      command: chown -R mysql:mysql /var/lib/mysql
+
+    - name: Start MySQL service on the slave node
+      service:
+        name: mysql
+        state: started
+
+    - name: Configure MySQL replication slave
+      mysql_replication:
+        mode: startreplica
+        master_host: "{{ mysql_master_ip }}"
+        master_user: replication
+        master_password: "{{ mysql_replication_password }}"
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/lib/mysql/mysql.sock
+
+    - name: Restart MySQL service
+      service:
+        name: mysql
+        state: restarted
