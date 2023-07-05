@@ -25,7 +25,8 @@
         group: ansible
 
     - name: Copy public key to remote host
-      copy:
+      local_action:
+        module: copy
         src: /home/ansible/.ssh/id_rsa.pub
         dest: /tmp/id_rsa.pub
       delegate_to: localhost
