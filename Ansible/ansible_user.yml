@@ -24,15 +24,13 @@
         group: ansible
 
     - name: Copy RSA public key
-      ansible.builtin.synchronize:
-        src: "/home/ansible/.ssh/id_rsa.pub"
-        dest: "/home/ansible/.ssh/id_rsa_ansible.pub"
-        rsync_opts:
-          - "--chown=ansible:ansible"
-      delegate to: ansible
+      fetch:
+        src: "buffer/{{ansible}}-home/ansible/.ssh/id_rsa.pub"
+        dest: "/tmp/id_rsa_ansible.pub"
+        flat: yes
 
     - name: Add RSA public key to authorized_keys
       authorized_key:
         user: ansible
-        key: "{{ lookup('file', '/home/ansible/.ssh/id_rsa_ansible.pub') }}"
+        key: "{{ lookup('file', '/tmp/id_rsa_ansible.pub') }}"
         state: present
