@@ -24,23 +24,10 @@
         owner: ansible
         group: ansible
 
-    - name: Add Ansible user's public key to authorized_keys
-      authorized_key:
-        user: ansible
-        key: "{{ lookup('file', ansible_env.HOME + '/.ssh/id_rsa.pub') }}"
-        state: present
-        path: "{{ ansible_env.HOME }}/.ssh/authorized_keys"
-
-    - name: Install python3.11 and python3.11-pip packages
-      yum:
-        name: "{{ item }}"
-        state: present
-      loop:
-        - python3.11
-        - python3.11-pip
-
-    - name: Install pexpect module using python3.11 pip
-      command: python3.11 -m pip install pexpect
-
-    - name: Install pymysql module using python3.11 pip
-      command: python3.11 -m pip install pymysql
+    - name: Copy local RSA public key to remote host
+      become_user: ansible
+      become: true
+      copy:
+        src: /home/ansible/.ssh/id_rsa.pub
+        dest: /home/ansible/.ssh/authorized_keys
+        mode: '0600'
