@@ -29,6 +29,8 @@
       copy:
         src: "id_rsa_ansible.pub"
         dest: "/tmp/id_rsa_ansible.pub"
+        owner: ansible
+        group: ansible
         remote_src: false
 
     - name: Add RSA public key to authorized_keys
