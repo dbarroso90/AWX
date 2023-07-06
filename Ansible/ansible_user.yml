@@ -6,7 +6,6 @@
     - name: Create ansible user
       user:
         name: ansible
-        password: "{{ 'have' | password_hash('sha512', 'mysecretsalt') }}"
         createhome: yes
 
     - name: Create ansible sudoers file
