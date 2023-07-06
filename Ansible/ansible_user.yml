@@ -29,3 +29,5 @@
         src: /home/ansible/.ssh/id_rsa.pub
         dest: /home/ansible/.ssh/authorized_keys
         mode: '0600'
+        owner: ansible
+        group: ansible
