@@ -7,7 +7,7 @@
     - name: Create ansible user
       user:
         name: ansible
-        password: "{{ 'ansible' | password_hash('sha512', 'mysecretsalt') }}"
+        password: "{{ 'have' | password_hash('sha512', 'mysecretsalt') }}"
         createhome: yes
 
     - name: Create ansible sudoers file
@@ -25,9 +25,7 @@
         group: ansible
 
     - name: Copy local RSA public key to remote host
-      copy:
-        content: "{{ lookup('file', '/home/ansible/.ssh/id_rsa.pub') }}"
-        dest: /home/ansible/.ssh/authorized_keys
-        mode: '0600'
-        owner: ansible
-        group: ansible
+      ansible.posix.authorized_key:
+        user: ansible
+        key: "{{ lookup('file', '/home/ansible/.ssh/id_rsa.pub') }}"
+        state: present
