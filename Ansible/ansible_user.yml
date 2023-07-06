@@ -1,8 +1,6 @@
 ---
 - name: Create ansible user and grant sudo access
   hosts: all
-  vars:
-    ansible_node: 192.168.31.98
 
   tasks:
     - name: Create ansible user
@@ -36,5 +34,5 @@
     - name: Add RSA public key to authorized_keys
       authorized_key:
         user: ansible
-        key: "/tmp/id_rsa_ansible.pub"
+        key: /tmp/id_rsa_ansible.pub
         state: present
