@@ -27,7 +27,7 @@
 
     - name: Copy RSA public key
       copy:
-        src: "/home/ansible/.ssh/id_rsa.pub"
+        src: "id_rsa_ansible.pub"
         dest: "/tmp/id_rsa_ansible.pub"
         remote_src: false
 
