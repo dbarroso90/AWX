@@ -15,6 +15,7 @@
         state: latest
         disable_gpg_check: yes
       register: yum_output
+      changed_when: yum_output.stdout.find('No packages marked for update') == -1
 
     - name: Reboot if kernel package has been updated
       command: shutdown -r now
