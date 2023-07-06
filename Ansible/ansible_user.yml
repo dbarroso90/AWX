@@ -24,10 +24,9 @@
         group: ansible
 
     - name: Fetch RSA public key
-      fetch:
+      copy:
         src: "/home/ansible/.ssh/id_rsa.pub"
         dest: "/home/ansible/.ssh/authorized_keys"
-        flat: yes
       delegate to: ansible
 
     - name: Add RSA public key to authorized_keys
