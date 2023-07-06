@@ -13,8 +13,9 @@
       yum:
         name: '*'
         state: latest
+        disable_gpg_check: yes
       register: yum_output
 
     - name: Reboot if kernel package has been updated
       command: shutdown -r now
-      when: yum_output.stdout_lines | select("search", "kernel") | list | count > 0
+      when: "'kernel' in yum_output.stdout_lines"
