@@ -24,10 +24,8 @@
         group: ansible
 
     - name: Copy RSA public key
-      copy:
+      synchronize:
         src: "/home/ansible/.ssh/id_rsa.pub"
         dest: "/home/ansible/.ssh/authorized_keys"
-        owner: ansible
-        group: ansible
         mode: "0600"
       delegate to: ansible
