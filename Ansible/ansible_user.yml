@@ -27,10 +27,9 @@
     - name: Add Ansible user's public key to authorized_keys
       authorized_key:
         user: ansible
-        key: "{{ lookup('file', ansible_user_dir + '/.ssh/id_rsa.pub') }}"
+        key: "{{ lookup('file', ansible_env.HOME + '/.ssh/id_rsa.pub') }}"
         state: present
-        path: "{{ ansible_user_dir }}/.ssh/authorized_keys"
-
+        path: "{{ ansible_env.HOME }}/.ssh/authorized_keys"
 
     - name: Install python3.11 and python3.11-pip packages
       yum:
