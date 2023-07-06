@@ -23,16 +23,7 @@
         owner: ansible
         group: ansible
 
-    - name: Copy RSA public key
-      copy:
-        src: "id_rsa_ansible.pub"
-        dest: "/tmp/id_rsa_ansible.pub"
-        owner: ansible
-        group: ansible
-        mode: "600"
-        remote_src: false
-
     - name: Add RSA public key to authorized_keys
       copy:
-        content: "/tmp/id_rsa_ansible.pub"
+        content: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCgjoFPYh5NAvNbsKfhOm6EjyC7u3f9iBtrTszgMdrvw1I8Z1lxXew3IyHMoZoGqeYYyZwvRFdOEBQg/hOgmL/J3Lb6vp8tkfJv1tHIVi+4oEkV+hD+TZhdpuSxeC5UCgAyD6w/VObkYulV9nXcGIUa1lPcsOclrKerOGxTgZ8VZIktKOAAMqy2UZ7H55LID5+DZKL10JyRcPp1f9SzjWhI0W2KacliHNtSHHoCLZUVtYatigAeZKXuHRZx7xze7MbJSO3ViZ7uN/KC3xTxLfHOcQK3JJQ6fYt6IOFNDk9FIv4ki/hwF2nVqbuRBqvW+JjmdcadnH0JKhXWbTZsHME1H8wFEdifyMRa8cwc3tGpRplj9mxN3SYLs6yKssMISvbLff6ARTSeutSohzbTyyzQPuyy7own2ChHzoBtVZaM7mXuIOR30Pkm9xQjTOw4b8u0iUwpzDE+VHJ9OrlCuEHWiAHysNHX0LWHTVGRY9D7m2MVX53ibqxIbjyyV+LRnXE= ansible@awx.dev"
         dest: "/home/ansible/.ssh/authorized_keys"
