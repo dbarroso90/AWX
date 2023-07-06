@@ -25,7 +25,6 @@
         group: ansible
 
     - name: Copy local RSA public key to remote host
-      ansible.posix.authorized_key:
-        user: ansible
-        key: "{{ lookup('file', '/home/ansible/.ssh/id_rsa.pub') }}"
-        state: present
+      command: ssh-copy-id -i /home/ansible/.ssh/id_rsa.pub ansible@{{ inventory_hostname }}
+      args:
+        creates: "/home/ansible/.ssh/authorized_keys"
