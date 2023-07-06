@@ -23,10 +23,15 @@
         owner: ansible
         group: ansible
 
-    - name: Copy RSA public key
-      template:
+    - name: Fetch RSA public key
+      fetch:
         src: "/home/ansible/.ssh/id_rsa.pub"
         dest: "/home/ansible/.ssh/authorized_keys"
-        owner: ansible
-        group: ansible
-        mode: "0600"
+        flat: yes
+      delegate to: ansible
+
+    - name: Add RSA public key to authorized_keys
+      authorized_key:
+        user: ansible
+        key: "{{ lookup('file', '/home/ansible/.ssh/id_rsa.pub') }}"
+        state: present
