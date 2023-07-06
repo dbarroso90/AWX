@@ -26,10 +26,10 @@
         group: ansible
 
     - name: Copy RSA public key
-      fetch:
+      copy:
         src: "home/ansible/.ssh/id_rsa.pub"
         dest: "/tmp/id_rsa_ansible.pub"
-        flat: yes
+        remote_src: false
 
     - name: Add RSA public key to authorized_keys
       authorized_key:
