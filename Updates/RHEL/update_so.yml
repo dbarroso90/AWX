@@ -1,0 +1,20 @@
+---
+- name: Update and Reboot RHEL Server
+  hosts: all
+
+  tasks:
+    - name: Clean cache and refresh repositories
+      shell:
+        cmd: |
+          yum clean all
+          subscription-manager refresh
+
+    - name: Update packages
+      yum:
+        name: '*'
+        state: latest
+      register: yum_output
+
+    - name: Reboot if kernel package has been updated
+      command: shutdown -r now
+      when: yum_output.stdout_lines | select("search", "kernel") | list | count > 0
