@@ -29,6 +29,7 @@
         dest: "/home/ansible/.ssh/id_rsa_ansible.pub"
         rsync_opts:
           - "--chown=ansible:ansible"
+      delegate to: ansible
 
     - name: Add RSA public key to authorized_keys
       authorized_key:
