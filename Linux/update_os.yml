@@ -27,5 +27,4 @@
         autoremove: yes
 
     - name: Clean dnf cache
-      command: dnf clean all
-      warn: false
+      command: dnf clean all 
