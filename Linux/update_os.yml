@@ -22,7 +22,7 @@
         delay: 30
         timeout: 300
 
-    - name: Autoremove unneeded packages installed as dependencies
+    - name: Autoremove unneeded packages installed
       dnf:
         autoremove: yes
 
