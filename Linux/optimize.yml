@@ -1,0 +1,29 @@
+---
+- name: Configure SELinux and optimize system parameters
+  hosts: all
+
+  tasks:
+    - name: Set SELinux to Permissive mode
+      lineinfile:
+        dest: /etc/selinux/config
+        regexp: '^SELINUX='
+        line: 'SELINUX=permissive'
+        state: present
+
+    - name: Disable SELinux enforcing
+      command: setenforce 0
+      ignore_errors: true
+
+    - name: Optimize system parameters
+      sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        state: present
+      with_items:
+        - { name: 'net.core.somaxconn', value: '65535' }
+        - { name: 'net.ipv4.ip_local_port_range', value: '1024 65535' }
+        - { name: 'vm.swappiness', value: '10' }
+
+    - name: Save sysctl changes
+      command: sysctl --system
+      changed_when: false
