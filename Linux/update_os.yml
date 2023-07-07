@@ -10,9 +10,9 @@
         state: latest
       register: update_package_result
 
-    - name: Debug update_package_result.changed
+    - name: Debug update_package_result
       debug:
-        var: update_package_result.changed
+        var: update_package_result
 
     - name: Reboot the system if kernel packages are modified
       reboot:
