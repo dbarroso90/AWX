@@ -23,7 +23,7 @@
         security: yes
         updates: yes
       register: kernel_package_result
-      changed_when: kernel_package_result.results | selectattr('changed', 'eq', true) | list | length > 0
+      changed_when: kernel_package_result.changed | default(false)
 
     - name: Reboot the system if kernel packages are modified
       reboot:
