@@ -1,0 +1,29 @@
+---
+- name: Update the system
+  hosts: all
+
+  tasks:
+    - name: Update package cache
+      package:
+        name: '*'
+        state: latest
+        update_cache: yes
+      register: package_update_result
+
+    - name: Perform system update
+      package:
+        name: '*'
+        state: latest
+      register: system_update_result
+      when: package_update_result.changed | default(false)
+
+    - name: Reboot the system if kernel packages are updated
+      reboot:
+        reboot_timeout: 300
+        msg: "Reboot initiated due to kernel package update"
+      when: system_update_result.changed | default(false) and "'kernel' in system_update_result.changed"
+
+    - name: Wait for the system to come back online
+      wait_for_connection:
+        delay: 30
+        timeout: 300
