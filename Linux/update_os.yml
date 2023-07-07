@@ -28,3 +28,4 @@
 
     - name: Clean dnf cache
       command: dnf clean all
+      warn: false
