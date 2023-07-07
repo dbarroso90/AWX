@@ -17,11 +17,19 @@
       register: system_update_result
       when: package_update_result.changed
 
-    - name: Reboot the system if kernel packages are updated
+    - name: Check if kernel packages are modified
+      yum:
+        list: kernel*
+        security: yes
+        updates: yes
+      register: kernel_package_result
+      changed_when: kernel_package_result.results | selectattr('changed', 'eq', true) | list | length > 0
+
+    - name: Reboot the system if kernel packages are modified
       reboot:
         reboot_timeout: 300
-        msg: "Reboot initiated due to kernel package update"
-      when: "'kernel' in system_update_result.changed"
+        msg: "Reboot initiated due to kernel package modification"
+      when: kernel_package_result.changed | default(false)
 
     - name: Wait for the system to come back online
       wait_for_connection:
