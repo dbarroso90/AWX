@@ -14,7 +14,7 @@
       reboot:
         reboot_timeout: 300
         msg: "Reboot initiated due to kernel package modification"
-      when: "'kernel' in kernel_package_result"
+      when: kernel_package_result is changed
 
     - name: Wait for the system to come back online
       wait_for_connection:
