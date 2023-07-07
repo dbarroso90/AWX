@@ -10,16 +10,11 @@
         state: latest
       register: update_package_result
 
-    - name: Check for modified kernel packages
-      set_fact:
-        kernel_packages_modified: "{{ update_package_result.results | selectattr('item') | selectattr('item.key', 'match', '^kernel.*') | list }}"
-      when: update_package_result.changed
-
     - name: Reboot the system if kernel packages are modified
       reboot:
         reboot_timeout: 300
         msg: "Reboot initiated due to kernel package modification"
-      when: kernel_packages_modified
+      when: 'kernel-' in update_package_result.changed
 
     - name: Wait for the system to come back online
       wait_for_connection:
