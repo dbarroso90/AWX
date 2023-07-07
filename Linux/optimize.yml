@@ -27,3 +27,9 @@
     - name: Save sysctl changes
       command: sysctl --system
       changed_when: false
+
+    - name: Reboot the system
+      reboot:
+        reboot_timeout: 300
+        msg: "Reboot initiated by Ansible playbook"
+        pre_reboot_delay: 5
