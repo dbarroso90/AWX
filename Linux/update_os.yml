@@ -10,15 +10,11 @@
         state: latest
       register: update_package_result
 
-    - name: Debug update_package_result
-      debug:
-        var: update_package_result
-
-    - name: Reboot the system if kernel packages are modified
+    - name: Reboot the system if packages are updated
       reboot:
         reboot_timeout: 300
-        msg: "Reboot initiated due to kernel package modification"
-      when: "'Installed: kernel' in update_package_result"
+        msg: "Reboot initiated due to package update"
+      when: update_package_result.changed
 
     - name: Wait for the system to come back online
       wait_for_connection:
