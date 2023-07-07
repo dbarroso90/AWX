@@ -8,17 +8,13 @@
         name: '*'
         disable_gpg_check: true
         state: latest
-
-    - name: Check if kernel packages are modified
-      dnf:
-        list: kernel*
       register: kernel_package_result
 
     - name: Reboot the system if kernel packages are modified
       reboot:
         reboot_timeout: 300
         msg: "Reboot initiated due to kernel package modification"
-      when: kernel_package_result | default(true)
+      when: "'kernel' in kernel_package_result"
 
     - name: Wait for the system to come back online
       wait_for_connection:
