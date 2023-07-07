@@ -7,7 +7,6 @@
       dnf:
         name: '*'
         disable_gpg_check: true
-        allowerasing: true
         state: latest
 
     - name: Check if kernel packages are modified
