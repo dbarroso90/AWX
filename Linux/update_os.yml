@@ -3,33 +3,30 @@
   hosts: all
 
   tasks:
-    - name: Update package cache
-      package:
-        name: '*'
-        state: latest
-        update_cache: yes
-      register: package_update_result
-
     - name: Perform system update
-      package:
+      dnf:
         name: '*'
+        disable_gpg_check: true
+        allowerasing: true
         state: latest
-      register: system_update_result
-      when: package_update_result.changed
 
     - name: Check if kernel packages are modified
       dnf:
         list: kernel*
       register: kernel_package_result
-      changed_when: kernel_package_result.changed | default(false)
+      changed_when: kernel_package_result.changed | default(true)
 
     - name: Reboot the system if kernel packages are modified
       reboot:
         reboot_timeout: 300
         msg: "Reboot initiated due to kernel package modification"
-      when: kernel_package_result.results | selectattr('changed', 'eq', true) | list | length > 0
+      when: kernel_package_result.changed | default(true)
 
     - name: Wait for the system to come back online
       wait_for_connection:
         delay: 30
         timeout: 300
+
+    - name: Autoremove unneeded packages installed as dependencies
+      dnf:
+        autoremove: yes
