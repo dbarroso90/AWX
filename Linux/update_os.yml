@@ -15,13 +15,13 @@
         name: '*'
         state: latest
       register: system_update_result
-      when: package_update_result.changed | default(false)
+      when: package_update_result.changed
 
     - name: Reboot the system if kernel packages are updated
       reboot:
         reboot_timeout: 300
         msg: "Reboot initiated due to kernel package update"
-      when: system_update_result.changed | default(false) and "'kernel' in system_update_result.changed"
+      when: "'kernel' in system_update_result.changed"
 
     - name: Wait for the system to come back online
       wait_for_connection:
