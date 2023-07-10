@@ -2,7 +2,8 @@
 - name: Update the system
   hosts: all
   gather_facts: false
-  no_warnings: true
+  PYTHONWARNINGS: ignore
+
 
   tasks:
     - name: Perform system update
