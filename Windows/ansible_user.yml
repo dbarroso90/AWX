@@ -4,7 +4,7 @@
 
   tasks:
     - name: Ensure user Ansible is present
-      ansible.windows.win_user:
+      win_user:
         name: ansible
         password: have
         state: present
