@@ -6,7 +6,7 @@
     - name: Ensure user Ansible is present
       win_user:
         name: ansible
-        password: have
+        password: HavePassword2023!
         state: present
         groups:
           - Administrators
