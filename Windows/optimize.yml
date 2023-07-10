@@ -1,0 +1,39 @@
+---
+- name: Optimize Windows Server 2019
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Set power plan to High Performance
+      win_shell: powercfg.exe /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
+
+    - name: Disable Windows Error Reporting
+      win_regedit:
+        path: HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting
+        name: Disabled
+        data: 1
+        type: dword
+
+    - name: Disable Superfetch
+      win_regedit:
+        path: HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters
+        name: EnableSuperfetch
+        data: 0
+        type: dword
+
+    - name: Disable Windows Search
+      win_command: sc config WSearch start=disabled
+
+    - name: Disable Windows Defender
+      win_command: PowerShell.exe -Command "Set-MpPreference -DisableRealtimeMonitoring $true"
+
+    - name: Enable Remote Desktop
+      win_command: PowerShell.exe -Command "Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name fDenyTSConnections -Value 0"
+
+    - name: Enable Remote PowerShell
+      win_command: PowerShell.exe -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"
+
+    - name: Reboot the server
+      win_reboot:
+        reboot_timeout: 300
+        reboot_message: "System will reboot now"
