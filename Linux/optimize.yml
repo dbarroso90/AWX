@@ -1,6 +1,8 @@
 ---
 - name: Configure SELinux and optimize system parameters
   hosts: all
+  gather_facts: false
+  no_warnings: true
 
   tasks:
     - name: Set SELinux to Permissive mode

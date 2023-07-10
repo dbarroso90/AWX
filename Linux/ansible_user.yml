@@ -1,6 +1,8 @@
 ---
 - name: Create ansible user and grant sudo access
   hosts: all
+  gather_facts: false
+  no_warnings: true
 
   tasks:
     - name: Create ansible user

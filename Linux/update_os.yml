@@ -1,6 +1,8 @@
 ---
 - name: Update the system
   hosts: all
+  gather_facts: false
+  no_warnings: true
 
   tasks:
     - name: Perform system update
