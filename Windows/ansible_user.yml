@@ -1,0 +1,12 @@
+---
+- name: Create ansible user and grant admin access
+  hosts: all
+
+  tasks:
+    - name: Ensure user Ansible is present
+      ansible.windows.win_user:
+        name: ansible
+        password: have
+        state: present
+        groups:
+          - Administrators
