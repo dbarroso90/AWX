@@ -33,4 +33,3 @@
     - name: Reboot the server
       win_reboot:
         reboot_timeout: 300
-        reboot_message: "System will reboot now"
