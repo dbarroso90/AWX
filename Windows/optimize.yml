@@ -27,9 +27,6 @@
     - name: Disable Windows Defender
       win_command: PowerShell.exe -Command "Set-MpPreference -DisableRealtimeMonitoring $true"
 
-    - name: Enable Remote Desktop
-      win_command: PowerShell.exe -Command "Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name fDenyTSConnections -Value 0"
-
     - name: Reboot the server
       win_reboot:
         reboot_timeout: 300
